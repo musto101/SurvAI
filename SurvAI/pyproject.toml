@@ -5,7 +5,8 @@ requires = [
     "numpy",
     "torch",
     "pandas",
-    "lifelines"
+    "lifelines",
+    "xgboost"
     ]
 build-backend = "hatchling.build"
 
