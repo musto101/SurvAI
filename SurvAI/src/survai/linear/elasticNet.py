@@ -2,7 +2,7 @@
 from sksurv.linear_model import CoxnetSurvivalAnalysis
 
 class SurvElasticNet:
-    def __init__(self, alphas=[1], l1_ratio=0.5, max_iter=100, random_state=None):
+    def __init__(self, alphas=[1], l1_ratio=0.5, max_iter=100):
         self.model = None
         self.alphas = alphas
         self.l1_ratio = l1_ratio
@@ -28,27 +28,8 @@ class SurvElasticNet:
         return self.model.set_params(**params)
 
     def __repr__(self):
-        return (f"CoxnetSurvivalAnalysis(alpha={self.alpha}, l1_ratio={self.l1_ratio}, "
-                f"max_iter={self.max_iter}, random_state={self.random_state})")
+        return (f"CoxnetSurvivalAnalysis(alphas={self.alphas}, l1_ratio={self.l1_ratio}, "
+                f"max_iter={self.max_iter})")
 
 
-# example of model initialization
-model = SurvElasticNet()
 
-# # example of model fitting
-# from sksurv.datasets import load_breast_cancer
-# from sklearn.model_selection import train_test_split
-#
-#
-# X, y = load_breast_cancer()
-# Xt = OneHotEncoder(sparse_output=False).fit_transform(X)
-#
-# X_train, X_test, y_train, y_test = train_test_split(Xt, y, test_size=0.2)
-#
-# model.fit(X_train, y_train)
-#
-# # example of model prediction
-# y_pred = model.predict(X_test)
-#
-# # example of model scoring
-# score = model.score(X_test, y_test)

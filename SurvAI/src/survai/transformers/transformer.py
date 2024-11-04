@@ -37,11 +37,6 @@ def default_args():
 
 opt = default_args()
 
-# Create the checkpoint directory
-if not os.path.exists(opt.save_ckpt_dir):
-    os.makedirs(opt.save_ckpt_dir)
-
-
 class TranDataset(Dataset):
     def __init__(self, features, labels, is_train=True):
         self.is_train = is_train
