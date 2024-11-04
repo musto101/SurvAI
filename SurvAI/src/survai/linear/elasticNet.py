@@ -1,7 +1,5 @@
-import pandas as pd
-from lifelines.utils import concordance_index
+
 from sksurv.linear_model import CoxnetSurvivalAnalysis
-from sklearn.preprocessing import OneHotEncoder
 
 class SurvElasticNet:
     def __init__(self, alphas=[1], l1_ratio=0.5, max_iter=100, random_state=None):
