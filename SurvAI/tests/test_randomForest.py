@@ -45,3 +45,5 @@ assert model.__repr__() == ("RandomSurvivalForest(n_estimators=200, min_samples_
 # assert that the model will return the correct concordance index
 c_index = model.concordance_index(X_test, y_test)
 assert c_index is not None
+
+print("All tests passed!")

@@ -395,7 +395,7 @@ def main(features, labels, num_features):
     return score, test
 
 # create a class to hold the model
-class Transformer():
+class Transformer:
     def __init__(self, features, labels, num_features):
         self.features = features
         self.labels = labels

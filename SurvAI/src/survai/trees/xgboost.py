@@ -33,7 +33,7 @@ class SurvXGB:
         }
 
     def fit(self, X, y):
-        self.X_db = xgb.DMatrix(X, label=y['last_DX'], weight=y['last_visit'])
+        self.X_db = xgb.DMatrix(X, label=y[0], weight=y[1])
         self.model = xgb.train(self.params(), self.X_db)
 
     def predict(self, X):

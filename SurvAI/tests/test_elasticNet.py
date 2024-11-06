@@ -37,3 +37,5 @@ assert model.max_iter == 200
 # assert that the model will return the correct string representation
 model = SurvElasticNet(alphas=[0.5], l1_ratio=0.3, max_iter=200)
 assert model.__repr__() == "CoxnetSurvivalAnalysis(alphas=[0.5], l1_ratio=0.3, max_iter=200)"
+
+print("All tests passed!")
