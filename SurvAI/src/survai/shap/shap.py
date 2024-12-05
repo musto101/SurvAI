@@ -41,5 +41,3 @@ class shap:
         self.predict_shap.dependence_plot(i)
 
 
-
-

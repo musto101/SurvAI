@@ -16,14 +16,16 @@ model.fit(X_train, y_train)
 
 # create the shap object
 shap = shap(model, X_train, y_train, X_test, y_test)
-
-
-
 # assert that the shap object is initialized correctly
 assert shap.model == model
 
 # assert that the shap object is fitted correctly
 shap.fit()
 assert shap.explainer != None
+assert shap.model_shap != None
+
+# assert that the shap object is predicted correctly
+shap.predict()
+assert shap.predict_shap != None
 
 print("All tests passed!")
