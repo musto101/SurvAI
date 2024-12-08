@@ -1,4 +1,6 @@
 import os
+from pyexpat import features
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -10,6 +12,9 @@ from torch.utils.data import Dataset, DataLoader
 import argparse
 from operator import itemgetter
 from lifelines.utils import concordance_index
+
+# Determine device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def default_args():
     parser = argparse.ArgumentParser(description='Survival analysis')
@@ -44,7 +49,6 @@ class TranDataset(Dataset):
 
         temp = []
         for feature, label in zip(features, labels):
-            feature = torch.from_numpy(feature).float()
             duration, is_observed = label[0], label[1]
             temp.append([duration, is_observed, feature])
         sorted_temp = sorted(temp, key=itemgetter(0))
@@ -57,23 +61,23 @@ class TranDataset(Dataset):
         for duration, is_observed, feature in new_temp:
             if is_observed:
                 mask = opt.max_time * [1.]
-                print(type(duration))
                 # change duration to int
                 duration = duration.astype(int)
-                print(type(opt.max_time))
                 label = duration * [1.] + (opt.max_time - duration) * [0.]
+                # make sure the feature is a tensor
+                feature = torch.tensor(feature).float()
                 feature = torch.stack(opt.max_time * [feature])
                 self.data.append(
-                    [feature.cuda(), torch.tensor(duration).float().cuda(), torch.tensor(mask).float().cuda(),
-                     torch.tensor(label).cuda(), torch.tensor(is_observed).byte().cuda()])
+                    [feature.to(device), torch.tensor(duration).float().to(device), torch.tensor(mask).float().to(device),
+                     torch.tensor(label).to(device), torch.tensor(is_observed).byte().to(device)])
             else:
                 # NOTE plus 1 to include day 0
                 mask = (duration + 1) * [1.] + (opt.max_time - (duration + 1)) * [0.]
                 label = opt.max_time * [1.]
                 feature = torch.stack(opt.max_time * [feature])
                 self.data.append(
-                    [feature.cuda(), torch.tensor(duration).float().cuda(), torch.tensor(mask).float().cuda(),
-                     torch.tensor(label).cuda(), torch.tensor(is_observed).byte().cuda()])
+                    [feature.to(device), torch.tensor(duration).float().to(device), torch.tensor(mask).float().to(device),
+                     torch.tensor(label).to(device), torch.tensor(is_observed).byte().to(device)])
 
     def __getitem__(self, index_a):
         if self.is_train:
@@ -388,9 +392,9 @@ def main(features, labels, num_features):
     attn = MultiHeadedAttention(opt.num_heads, opt.d_model, opt.drop_prob)
     ff = PositionwiseFeedForward(opt.d_model, opt.d_ff, opt.drop_prob)
     encoder_layer = EncoderLayer(opt.d_model, c(attn), c(ff), opt.drop_prob)
-    encoder = Encoder(encoder_layer, opt.N, opt.d_model, opt.drop_prob, num_features).cuda()
+    encoder = Encoder(encoder_layer, opt.N, opt.d_model, opt.drop_prob, num_features).to(device)
     if opt.data_parallel:
-        encoder = torch.nn.DataParallel(encoder).cuda()
+        encoder = torch.nn.DataParallel(encoder).to(device)
     score, test = train(features, labels, encoder)
     return score, test
 
@@ -409,4 +413,17 @@ class Transformer:
         return self.test
 
 
+# # # Example of model initialization
+from sksurv.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
 
+X, y = load_breast_cancer()
+Xt = OneHotEncoder(sparse_output=False).fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(Xt, y, test_size=0.2)
+
+features = [X_train, X_test, X_test]
+labels = [y_train, y_test, y_test]
+
+trans = Transformer(features, labels, X.shape[1])
