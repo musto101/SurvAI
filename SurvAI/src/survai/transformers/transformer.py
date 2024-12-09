@@ -1,6 +1,5 @@
 import os
 from pyexpat import features
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -19,7 +18,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def default_args():
     parser = argparse.ArgumentParser(description='Survival analysis')
     parser.add_argument('--max_time', type=int, default=500, help='Max number of months')
-    parser.add_argument('--num_epochs', type=int, default=10)
+    parser.add_argument('--num_epochs', type=int, default=1000)
     parser.add_argument('--N', type=int, default=6, help='Number of modules')
     parser.add_argument('--num_heads', type=int, default=8)
     parser.add_argument('--d_model', type=int, default=64)
@@ -302,15 +301,15 @@ def evaluate(encoder, test_loader):
     return test_cindex, mae_obs, total_surv_probs
 
 
-def checkpoint(model, total_surv_probs):
-    datadir = opt.data_dir.replace('/', '.')
-    model_out_path = "{}/best_model_trainset_{}.pth".format(opt.save_ckpt_dir, datadir)
-    torch.save(model, model_out_path)
-    print("Checkpoint saved to {}".format(model_out_path))
-
-    # Save npy array
-    surv_probs_out_path = "{}/best_surv_probs_test_{}.pth".format(opt.save_ckpt_dir, datadir)
-    np.save(surv_probs_out_path, total_surv_probs.cpu().numpy())
+# def checkpoint(model, total_surv_probs):
+#     datadir = opt.data_dir.replace('/', '.')
+#     model_out_path = "{}/best_model_trainset_{}.pth".format(opt.save_ckpt_dir, datadir)
+#     torch.save(model, model_out_path)
+#     print("Checkpoint saved to {}".format(model_out_path))
+#
+#     # Save npy array
+#     surv_probs_out_path = "{}/best_surv_probs_test_{}.pth".format(opt.save_ckpt_dir, datadir)
+#     np.save(surv_probs_out_path, total_surv_probs.cpu().numpy())
 
 
 def train(features, labels, encoder):
@@ -379,7 +378,7 @@ def train(features, labels, encoder):
                 best_test_cindex = test_cindex
                 best_test_mae = test_mae
                 best_epoch = t
-                checkpoint(encoder, test_total_surv_probs)
+                # checkpoint(encoder, test_total_surv_probs)
 
             print('current val cindex', val_cindex, 'val mae', val_mae)
             print('BEST val cindex', best_val_cindex, 'mae', best_val_mae, 'at epoch', best_epoch)
@@ -426,4 +425,4 @@ X_train, X_test, y_train, y_test = train_test_split(Xt, y, test_size=0.2)
 features = [X_train, X_test, X_test]
 labels = [y_train, y_test, y_test]
 
-trans = Transformer(features, labels, X.shape[1])
+trans = Transformer(features, labels, X_train.shape[1])
